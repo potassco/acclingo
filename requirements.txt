@@ -1,0 +1,2 @@
+smac>=0.3.0
+git+https://github.com/mlindauer/GenericWrapper4AC@master
