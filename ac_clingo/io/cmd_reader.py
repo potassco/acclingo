@@ -42,11 +42,11 @@ class CMDReader(object):
         opt_opts.add_argument("--cutoff", default=10, type=int,
                               help="running time cutoff [sec]")
         opt_opts.add_argument("--memlimit", default=2048, type=int,
-                              help="memory limit of clasp")
+                              help="memory limit")
         opt_opts.add_argument("--ac_budget", default=360,
                               help="configuration budget [sec]")
 
-        opt_opts.add_argument("--binary", default="binaries/clasp",
+        opt_opts.add_argument("--binary", default="binaries/clingo",
                               help="target binary")
         opt_opts.add_argument("--pcs_file", default="pcs/params.pcs",
                               help="parameter configuration file")
