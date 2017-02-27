@@ -108,6 +108,8 @@ class ClaspTAE(ExecuteTARun):
              for p in p_list:
                  cmd += " "+p
         
+        cmd += " --mode=clasp"
+        
         if instance.endswith(".gz"):
            cmd += "'"
            
