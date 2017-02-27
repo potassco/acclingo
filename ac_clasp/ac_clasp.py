@@ -4,6 +4,7 @@ from smac.facade.smac_facade import SMAC
 from smac.scenario.scenario import Scenario
 
 from ac_clasp.io.cmd_reader import CMDReader
+from ac_clasp.tae.clasp_tae import ClaspTAE
 
 __maintainer__='Marius Lindauer'
 __license__ = "BSD"
@@ -14,8 +15,6 @@ class ACClasp(object):
         '''
             Constructor
         ''' 
-        
-        
         
     def main(self):
         '''
@@ -32,5 +31,10 @@ class ACClasp(object):
         
         scen = Scenario(scen_opts)
         
-        smac = SMAC(scenario=scen, rng=args_.seed)
+        ctae = ClaspTAE(clasp_bin=args_.clasp, runsolver_bin=args_.runsolver, 
+                 memlimit=args_.memlimit,
+                 run_obj="runtime",
+                 par_factor=10)
+        
+        smac = SMAC(scenario=scen, rng=args_.seed, tae_runner=ctae)
         conf = smac.optimize()

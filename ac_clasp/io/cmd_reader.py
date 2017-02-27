@@ -50,8 +50,8 @@ class CMDReader(object):
                               help="clasp binary")
         opt_opts.add_argument("--pcs_file", default="pcs/params.pcs",
                               help="parameter configuration file")
-        opt_opts.add_argument("--wrapper", default="binaries/wrapper.py",
-                              help="wrapper interface between smac and clasp")
+        opt_opts.add_argument("--runsolver", default="binaries/runsolver",
+                              help="runsolver binary")
 
 
         opt_opts.add_argument("--seed", default=12345, type=int,
@@ -71,7 +71,7 @@ class CMDReader(object):
         misc["wallclock_limit"] = args_.ac_budget
         misc["cutoff_time"] = args_.cutoff
         misc["paramfile"] = args_.pcs_file
-        misc["algo"] = "python -u %s --mem-limit %d --binary %s" %(args_.wrapper, args_.memlimit, args_.clasp)
+        misc["algo"] = ""
 
         return args_, misc
 
