@@ -3,13 +3,13 @@ import logging
 from smac.facade.smac_facade import SMAC
 from smac.scenario.scenario import Scenario
 
-from ac_clasp.io.cmd_reader import CMDReader
-from ac_clasp.tae.clasp_tae import ClaspTAE
+from ac_clingo.io.cmd_reader import CMDReader
+from ac_clingo.tae.clasp_tae import ClaspTAE
 
 __maintainer__='Marius Lindauer'
 __license__ = "BSD"
 
-class ACClasp(object):
+class ACClingo(object):
     
     def __init__(self):
         '''
@@ -31,7 +31,7 @@ class ACClasp(object):
         
         scen = Scenario(scen_opts)
         
-        ctae = ClaspTAE(clasp_bin=args_.clasp, runsolver_bin=args_.runsolver, 
+        ctae = ClaspTAE(ta_bin=args_.binary, runsolver_bin=args_.runsolver, 
                  memlimit=args_.memlimit,
                  run_obj="runtime",
                  par_factor=10)

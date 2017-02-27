@@ -17,7 +17,7 @@ float_regex = '[+-]?\d+(?:\.\d+)?(?:[eE][+-]\d+)?'
 class ClaspTAE(ExecuteTARun):
 
     
-    def __init__(self, clasp_bin:str, runsolver_bin:str, 
+    def __init__(self, ta_bin:str, runsolver_bin:str, 
                  memlimit:int=2048,
                  stats:Stats=None, runhistory:RunHistory=None, 
                  run_obj:str="runtime",
@@ -30,7 +30,7 @@ class ClaspTAE(ExecuteTARun):
     
             Attributes
             ----------
-            clasp_bin: str
+            ta_bin: str
                 clasp binary
             runsolver_bin: str
                 runsolver binary
@@ -50,7 +50,7 @@ class ClaspTAE(ExecuteTARun):
                          run_obj=run_obj,
                          par_factor=par_factor)
         
-        self.clasp_bin = clasp_bin
+        self.ta_bin = ta_bin
         self.runsolver_bin = runsolver_bin
         self.memlimit = memlimit
         
@@ -91,9 +91,9 @@ class ClaspTAE(ExecuteTARun):
 
         
         if not instance.endswith(".gz"):
-            cmd = "%s %s --seed %d " %(self.clasp_bin, instance, seed)       
+            cmd = "%s %s --seed %d " %(self.ta_bin, instance, seed)       
         else:
-            cmd = "bash -c 'zcat %s | %s --seed %d " %(instance, self.clasp_bin, seed )       
+            cmd = "bash -c 'zcat %s | %s --seed %d " %(instance, self.ta_bin, seed )       
         
         params = []
         for name in config:

@@ -46,8 +46,8 @@ class CMDReader(object):
         opt_opts.add_argument("--ac_budget", default=360,
                               help="configuration budget [sec]")
 
-        opt_opts.add_argument("--clasp", default="binaries/clasp",
-                              help="clasp binary")
+        opt_opts.add_argument("--binary", default="binaries/clasp",
+                              help="target binary")
         opt_opts.add_argument("--pcs_file", default="pcs/params.pcs",
                               help="parameter configuration file")
         opt_opts.add_argument("--runsolver", default="binaries/runsolver",
