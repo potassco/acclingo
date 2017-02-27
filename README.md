@@ -16,11 +16,14 @@ You should have received a copy of the 3-clause BSD license along with this prog
 
 # Installation
 
-1. Install `SMAC3`, see https://github.com/automl/SMAC3 
-2. Install `ac_clingo` TODO
+`ac_clingo` only requires `SMAC3` to be installed, sources and documentation can be found here: https://github.com/automl/SMAC3. 
 
 # Usage
 
+No further installation is necessary and the main script can be executed via following commandline:
 ```
 python3 ac_clingo/ac_clingo.py --instance_dir <directory> <optional options>
 ```
+The directory with the instances is the only required parameter, all other options are optional.
+Per default, `ac_clingo` optimizes a parameter configuration for solving only from the parameter space described [here](pcs/params.pcs) using grounded instances from `<directory>` that may be gzipped.
+We provide a static binary for `clingo 5.1.0` and `runsolver 3.3.4` [here](binaries/).
