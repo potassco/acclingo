@@ -93,7 +93,7 @@ class ClaspTAE(ExecuteTARun):
         if not instance.endswith(".gz"):
             cmd = "%s %s --seed %d " %(self.clasp_bin, instance, seed)       
         else:
-            cmd = "bash -c 'zcat %s | %s --seed %d " %(instance, sefl.clasp_bin, seed )       
+            cmd = "bash -c 'zcat %s | %s --seed %d " %(instance, self.clasp_bin, seed )       
         
         params = []
         for name in config:
