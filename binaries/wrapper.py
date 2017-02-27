@@ -30,7 +30,11 @@ class ClaspWrapper(AbstractWrapper):
             A command call list to execute the target algorithm.
         '''
         solver_binary = self.args.binary
-        cmd = "%s %s --seed %d " %(solver_binary, runargs["instance"], runargs["seed"], )       
+        
+        if not runargs['instance'].endswith(".gz"):
+            cmd = "%s %s --seed %d " %(solver_binary, runargs["instance"], runargs["seed"])       
+        else:
+            cmd = "bash -c 'zcat %s | %s --seed %d " %(runargs["instance"], solver_binary, runargs["seed"], )       
         
         params = []
         for name, value in config.items():
@@ -41,6 +45,9 @@ class ClaspWrapper(AbstractWrapper):
         for t, p_list in thread_to_params.items():
              for p in p_list:
                  cmd += " "+p
+        
+        if runargs['instance'].endswith(".gz"):
+           cmd += "'"
         
         return cmd
     
