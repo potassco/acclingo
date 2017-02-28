@@ -2,11 +2,14 @@ import inspect
 import logging
 import importlib.util
 
-from smac.facade.smac_facade import SMAC
+#from smac.facade.smac_facade import SMAC
+#TODO: fix this hack by using the original SMAC facade after it was updated
+from ac_clingo.facade.smac_facade import SMAC
 from smac.scenario.scenario import Scenario
 
 from ac_clingo.io.cmd_reader import CMDReader
 from ac_clingo.tae.clasp_tae import ClaspTAE
+from ac_clingo.intensification.intensification import Intensifier
 
 __maintainer__='Marius Lindauer'
 __license__ = "BSD"
@@ -48,5 +51,10 @@ class ACClingo(object):
                             run_obj=args_.run_obj,
                             par_factor=10)
         
-        smac = SMAC(scenario=scen, rng=args_.seed, tae_runner=ctae)
+        # use individualized compare methode
+        intensifier = Intensifier(tae_runner=None, stats=None, 
+                                  traj_logger=None, rng=None,
+                                  instances=None)
+        
+        smac = SMAC(scenario=scen, rng=args_.seed, tae_runner=ctae, intensifier=intensifier)
         conf = smac.optimize()
