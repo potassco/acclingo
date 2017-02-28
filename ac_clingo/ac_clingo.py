@@ -1,4 +1,6 @@
+import inspect
 import logging
+import importlib.util
 
 from smac.facade.smac_facade import SMAC
 from smac.scenario.scenario import Scenario
@@ -31,10 +33,20 @@ class ACClingo(object):
         
         scen = Scenario(scen_opts)
         
-        ctae = ClaspTAE(ta_bin=args_.binary, runsolver_bin=args_.runsolver, 
-                 memlimit=args_.memlimit,
-                 run_obj="runtime",
-                 par_factor=10)
+        if args_.tae_class:
+            spec = importlib.util.spec_from_file_location("tae",args_.tae_class)
+            tae_module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(tae_module)
+            tae_class = inspect.getmembers(tae_module, inspect.isclass)[0][1]
+            ctae = tae_class(ta_bin=args_.binary, runsolver_bin=args_.runsolver, 
+                            memlimit=args_.memlimit,
+                            run_obj=args_.run_obj,
+                            par_factor=10)
+        else:
+            ctae = ClaspTAE(ta_bin=args_.binary, runsolver_bin=args_.runsolver, 
+                            memlimit=args_.memlimit,
+                            run_obj=args_.run_obj,
+                            par_factor=10)
         
         smac = SMAC(scenario=scen, rng=args_.seed, tae_runner=ctae)
         conf = smac.optimize()

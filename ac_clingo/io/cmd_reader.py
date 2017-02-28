@@ -45,6 +45,9 @@ class CMDReader(object):
                               help="memory limit")
         opt_opts.add_argument("--ac_budget", default=360,
                               help="configuration budget [sec]")
+        opt_opts.add_argument("--run_obj", default="runtime",
+                              choices=["runtime", "quality"],
+                              help="run objective")
 
         opt_opts.add_argument("--binary", default="binaries/clingo",
                               help="target binary")
@@ -52,6 +55,8 @@ class CMDReader(object):
                               help="parameter configuration file")
         opt_opts.add_argument("--runsolver", default="binaries/runsolver",
                               help="runsolver binary")
+        opt_opts.add_argument("--tae_class", default=None,
+                              help="TAE class to individualize clingo calls -- has to inherit from smac.tae.execute_ta_run.ExecuteTARun")
 
 
         opt_opts.add_argument("--seed", default=12345, type=int,
@@ -72,6 +77,7 @@ class CMDReader(object):
         misc["cutoff_time"] = args_.cutoff
         misc["paramfile"] = args_.pcs_file
         misc["algo"] = ""
+        misc["run_obj"] = args_.run_obj
 
         return args_, misc
 
