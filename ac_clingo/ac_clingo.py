@@ -44,12 +44,14 @@ class ACClingo(object):
             ctae = tae_class(ta_bin=args_.binary, runsolver_bin=args_.runsolver, 
                             memlimit=args_.memlimit,
                             run_obj=args_.run_obj,
-                            par_factor=10)
+                            par_factor=10,
+                            misc=args_.tae_args)
         else:
             ctae = ClaspTAE(ta_bin=args_.binary, runsolver_bin=args_.runsolver, 
                             memlimit=args_.memlimit,
                             run_obj=args_.run_obj,
-                            par_factor=10)
+                            par_factor=10,
+                            misc=args_.tae_args)
         
         # use individualized compare methode
         intensifier = Intensifier(tae_runner=None, stats=None, 

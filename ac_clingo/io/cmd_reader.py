@@ -1,6 +1,7 @@
 import os
 import logging
 import glob
+import json
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, SUPPRESS
 
 
@@ -64,9 +65,13 @@ class CMDReader(object):
         opt_opts.add_argument("--verbose_level", default=logging.INFO,
                               choices=["INFO", "DEBUG"],
                               help="random seed")
+        opt_opts.add_argument("--tae_args", default="{}",
+                              help="Miscellaneous options for the TAE")
+        
 
         args_, misc = parser.parse_known_args()
         self._check_args(args_)
+        args_.tae_args=json.loads(args_.tae_args)
 
         # remove leading '-' in option names
         misc = dict((k.lstrip("-"), v.strip("'"))

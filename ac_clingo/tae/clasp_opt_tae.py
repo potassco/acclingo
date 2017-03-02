@@ -14,7 +14,7 @@ __license__ = "3-clause BSD"
 
 float_regex = '[+-]?\d+(?:\.\d+)?(?:[eE][+-]\d+)?'
 
-class ClaspTAE(ExecuteTARun):
+class ClaspOptTAE(ExecuteTARun):
 
     
     def __init__(self, ta_bin:str, runsolver_bin:str, 
@@ -54,7 +54,12 @@ class ClaspTAE(ExecuteTARun):
         self.ta_bin = ta_bin
         self.runsolver_bin = runsolver_bin
         self.memlimit = memlimit
-        
+        self.par_factor = par_factor
+        self.best_known=dict();
+        if "best_known" in misc:
+            with open(misc["best_known"]) as f:
+                for line in f.readlines():
+                   self.best_known[line.split(',')[0].strip()]=int(line.split(',')[1].strip())
 
     def run(self, config, instance,
             cutoff,
@@ -149,10 +154,13 @@ class ClaspTAE(ExecuteTARun):
             os.remove(watcher_file)
             os.remove(solver_file)
 
-        if self.run_obj == "runtime":
-            cost = ta_runtime
+        if ta_quality == None:
+            cost = cutoff * self.par_factor
         else:
-            cost = ta_quality
+            best = self.best_known[os.path.splitext(os.path.basename(instance))[0]]
+            diff = float(ta_quality) - float(best)
+            prct = float(best)/100.0 if best!=0 else 1.0
+            cost = min(float(cutoff * self.par_factor),1+diff/prct)
             
         return ta_status, cost, ta_runtime, {}
     
@@ -353,9 +361,20 @@ class ClaspTAE(ExecuteTARun):
         
         ta_status = None
         ta_quality = None
+        
+        match=None
+        
+        for match in re.finditer(r"Optimization: ([0-9]+)", data):
+            pass
+        
+        if match:
+            ta_quality = int(match[1])
+        
         if re.search('UNSATISFIABLE', data):
             ta_status = StatusType.SUCCESS
         elif re.search('SATISFIABLE', data):
+            ta_status = StatusType.SUCCESS
+        elif re.search('OPTIMUM FOUND', data):
             ta_status = StatusType.SUCCESS
         elif re.search('s UNKNOWN', data):
             ta_status = StatusType.TIMEOUT
