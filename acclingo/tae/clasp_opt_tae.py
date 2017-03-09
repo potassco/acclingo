@@ -154,13 +154,13 @@ class ClaspOptTAE(ExecuteTARun):
             os.remove(watcher_file)
             os.remove(solver_file)
 
-        if ta_quality == None:
+        if ta_quality == None or ta_runtime == None:
             cost = cutoff * self.par_factor
         else:
             best = self.best_known[os.path.splitext(os.path.basename(instance))[0]]
             diff = float(ta_quality) - float(best)
             prct = float(best)/100.0 if best!=0 else 1.0
-            cost = min(float(cutoff * self.par_factor),1+diff/prct)
+            cost = min(float(cutoff * self.par_factor),ta_runtime*(1+diff/prct))
             
         return ta_status, cost, ta_runtime, {}
     
