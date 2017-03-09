@@ -4,12 +4,12 @@ import importlib.util
 
 #from smac.facade.smac_facade import SMAC
 #TODO: fix this hack by using the original SMAC facade after it was updated
-from ac_clingo.facade.smac_facade import SMAC
+from acclingo.facade.smac_facade import SMAC
 from smac.scenario.scenario import Scenario
 
-from ac_clingo.io.cmd_reader import CMDReader
-from ac_clingo.tae.clasp_tae import ClaspTAE
-from ac_clingo.intensification.intensification import Intensifier
+from acclingo.io.cmd_reader import CMDReader
+from acclingo.tae.clasp_tae import ClaspTAE
+from acclingo.intensification.intensification import Intensifier
 
 __maintainer__='Marius Lindauer'
 __license__ = "BSD"

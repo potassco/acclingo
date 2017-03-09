@@ -9,7 +9,7 @@ cmd_folder = os.path.realpath(os.path.join(cmd_folder, ".."))
 if cmd_folder not in sys.path:
     sys.path.insert(0,cmd_folder)
 
-from ac_clingo.ac_clingo import ACClingo
+from acclingo.acclingo import ACClingo
 
 
 if __name__ == "__main__":
