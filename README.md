@@ -22,7 +22,7 @@ You should have received a copy of the 3-clause BSD license along with this prog
 
 No further installation is necessary and the main script can be executed via following commandline:
 ```
-python scripts/acclingo.py --instance_dir <directory> <optional options>
+python scripts/acclingo --instance_dir <directory> <optional options>
 ```
 The directory with the instances is the only required parameter, all other options are optional, see `--help` for more information.
 Per default, `acclingo` retrieves a parameter configuration optimizing runtime for solving grounded instances from the parameter space described [here](pcs/params.pcs) using instances that may be gzipped from `<directory>` .
