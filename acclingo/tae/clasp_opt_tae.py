@@ -118,7 +118,7 @@ class ClaspOptTAE(ExecuteTARun):
         
         if instance.endswith(".gz"):
            cmd += "'"
-           
+         
         # runsolver
         random_id = random.randint(0,2**20)
         tmp_dir = "."
@@ -368,7 +368,7 @@ class ClaspOptTAE(ExecuteTARun):
             pass
         
         if match:
-            ta_quality = int(match[1])
+            ta_quality = int(match.group(1))
         
         if re.search('UNSATISFIABLE', data):
             ta_status = StatusType.SUCCESS
