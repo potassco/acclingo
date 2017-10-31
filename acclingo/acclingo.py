@@ -2,8 +2,6 @@ import inspect
 import logging
 import importlib.util
 
-from numpy.random import RandomState
-
 from smac.facade.smac_facade import SMAC
 from smac.intensification.intensification import Intensifier
 from smac.scenario.scenario import Scenario
@@ -54,11 +52,5 @@ class ACClingo(object):
                             par_factor=10,
                             misc=args_.tae_args)
         
-        # use individualized compare methode
-        intensifier = Intensifier(tae_runner=None, stats=None, 
-                                  traj_logger=None, rng=RandomState(),
-                                  instances=None)
-        
-        
-        smac = SMAC(scenario=scen, rng=args_.seed, tae_runner=ctae, intensifier=intensifier)
+        smac = SMAC(scenario=scen, rng=args_.seed, tae_runner=ctae)
         conf = smac.optimize()
