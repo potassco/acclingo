@@ -14,7 +14,7 @@ __license__ = "3-clause BSD"
 
 float_regex = '[+-]?\d+(?:\.\d+)?(?:[eE][+-]\d+)?'
 
-class ClaspOptTAE(ExecuteTARun):
+class ClaspTAE(ExecuteTARun):
 
     
     def __init__(self, ta_bin:str, runsolver_bin:str, 
@@ -54,12 +54,12 @@ class ClaspOptTAE(ExecuteTARun):
         self.ta_bin = ta_bin
         self.runsolver_bin = runsolver_bin
         self.memlimit = memlimit
-        self.par_factor = par_factor
-        self.best_known=dict();
-        if "best_known" in misc:
-            with open(misc["best_known"]) as f:
-                for line in f.readlines():
-                   self.best_known[line.split(',')[0].strip()]=int(line.split(',')[1].strip())
+        
+        if "penalty" in misc:
+            self.penalty = misc["penalty"]
+        else:
+            self.penalty = 2
+        
 
     def run(self, config, instance,
             cutoff,
@@ -97,9 +97,9 @@ class ClaspOptTAE(ExecuteTARun):
 
         
         if not instance.endswith(".gz"):
-            cmd = "%s %s --seed %d " %(self.ta_bin, instance, seed)       
+            cmd = "%s %s --seed=%d " %(self.ta_bin, instance, seed)       
         else:
-            cmd = "bash -c 'zcat %s | %s --seed %d " %(instance, self.ta_bin, seed )       
+            cmd = "bash -c 'zcat %s | %s --seed=%d " %(instance, self.ta_bin, seed )       
         
         params = []
         for name in config:
@@ -114,11 +114,9 @@ class ClaspOptTAE(ExecuteTARun):
              for p in p_list:
                  cmd += " "+p
         
-        cmd += " --mode=clasp"
-        
         if instance.endswith(".gz"):
            cmd += "'"
-         
+        
         # runsolver
         random_id = random.randint(0,2**20)
         tmp_dir = "."
@@ -154,13 +152,14 @@ class ClaspOptTAE(ExecuteTARun):
             os.remove(watcher_file)
             os.remove(solver_file)
 
-        if ta_quality == None or ta_runtime == None:
-            cost = cutoff * self.par_factor
+        if self.run_obj == "runtime":
+            # get runtime if optimum was found, else apply penalty
+            if ta_status == StatusType.SUCCESS:
+                cost = ta_runtime
+            else:
+                cost = cutoff * self.penalty
         else:
-            best = self.best_known[os.path.splitext(os.path.basename(instance))[0]]
-            diff = float(ta_quality) - float(best)
-            prct = float(best)/100.0 if best!=0 else 1.0
-            cost = min(float(cutoff * self.par_factor),ta_runtime*(1+diff/prct))
+            cost = ta_quality
             
         return ta_status, cost, ta_runtime, {}
     
@@ -350,7 +349,7 @@ class ClaspOptTAE(ExecuteTARun):
         Parse a results file to extract the run's status (SUCCESS/CRASHED/etc) and other optional results.
     
         Args:
-            fn: a name to the file containing clasp stdout.
+            fn: a name to the file containing asprin stdout.
             exit_code : exit code of target algorithm
         Returns:
             ta_status, ta_quality 
@@ -361,19 +360,10 @@ class ClaspOptTAE(ExecuteTARun):
         
         ta_status = None
         ta_quality = None
-        
-        match=None
-        
-        for match in re.finditer(r"Optimization: ([0-9]+)", data):
-            pass
-        
-        if match:
-            ta_quality = int(match.group(1))
-        
         if re.search('UNSATISFIABLE', data):
-            ta_status = StatusType.SUCCESS
+            ta_status = StatusType.TIMEOUT
         elif re.search('SATISFIABLE', data):
-            ta_status = StatusType.SUCCESS
+            ta_status = StatusType.TIMEOUT
         elif re.search('OPTIMUM FOUND', data):
             ta_status = StatusType.SUCCESS
         elif re.search('s UNKNOWN', data):

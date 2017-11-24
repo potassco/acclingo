@@ -45,6 +45,12 @@ class ClaspOptTAE(ExecuteTARun):
                 run objective (runtime or quality)
             par_factor: int
                 penalized average runtime factor
+
+            misc: Can contain the following key:value pairs
+                    "solution": float
+                    "time"    : float
+                    "penalty" : float
+                    "normalized": bool
         """
         super().__init__(ta=None,
                          stats=stats, runhistory=runhistory, 
@@ -56,11 +62,28 @@ class ClaspOptTAE(ExecuteTARun):
         self.memlimit = memlimit
         self.par_factor = par_factor
         self.best_known=dict();
+        self.solution_weight = 0.5
+        self.time_weight = 0.5
+        self.unsolved_penalty = 1
+        self.normalized = False
+
         if "best_known" in misc:
             with open(misc["best_known"]) as f:
                 for line in f.readlines():
                    self.best_known[line.split(',')[0].strip()]=int(line.split(',')[1].strip())
 
+        if "solution" in misc:
+            self.solution_weight = float(misc["solution"])
+
+        if "time" in misc:
+            self.time_weight = float(misc["time"])
+        
+        if "penalty" in misc:
+            self.unsolved_penalty = float(misc["penalty"])
+
+        if "normalized" in misc:
+            self.normalized = misc["normalized"]
+        
     def run(self, config, instance,
             cutoff,
             seed=12345,
@@ -155,12 +178,24 @@ class ClaspOptTAE(ExecuteTARun):
             os.remove(solver_file)
 
         if ta_quality == None or ta_runtime == None:
-            cost = cutoff * self.par_factor
+            cost = self.par_factor * self.unsolved_penalty
         else:
+            
             best = self.best_known[os.path.splitext(os.path.basename(instance))[0]]
-            diff = float(ta_quality) - float(best)
-            prct = float(best)/100.0 if best!=0 else 1.0
-            cost = min(float(cutoff * self.par_factor),ta_runtime*(1+diff/prct))
+            if best == 0: 
+                best = 1
+            
+            #normalized or not, it only affects how the solution quality is calculated
+            if not self.normalized:
+                # not normalized
+                solution_quality = float(ta_quality)/float(best)
+            else:
+                # normalized
+                solution_quality = 1 - (float(best)/float(ta_quality)) if ta_quality != 0 else 0
+
+            runtime_quality = float(ta_runtime)/float(cutoff)
+  
+            cost = min(float(self.par_factor * self.unsolved_penalty), self.time_weight * runtime_quality + self.solution_weight * solution_quality)
             
         return ta_status, cost, ta_runtime, {}
     
