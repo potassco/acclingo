@@ -7,6 +7,8 @@ from subprocess import Popen, PIPE
 from smac.tae.execute_ta_run import StatusType, ExecuteTARun
 from smac.stats.stats import Stats
 from smac.runhistory.runhistory import RunHistory
+from smac.utils.constants import MAXINT
+
 from tempfile import NamedTemporaryFile
 
 __author__ = "Marius Lindauer"
@@ -17,11 +19,14 @@ float_regex = '[+-]?\d+(?:\.\d+)?(?:[eE][+-]\d+)?'
 class ClaspOptTAE(ExecuteTARun):
 
     
-    def __init__(self, ta_bin:str, runsolver_bin:str, 
+    def __init__(self, ta_bin:str, runsolver_bin:str,
+                 ta=None, 
                  memlimit:int=2048,
                  stats:Stats=None, runhistory:RunHistory=None, 
                  run_obj:str="runtime",
                  par_factor=10,
+                 cost_for_crash: float=float(MAXINT),
+                 abort_on_first_run_crash: bool=True,
                  misc=dict()
                  ):
         """
@@ -52,11 +57,13 @@ class ClaspOptTAE(ExecuteTARun):
                     "penalty" : float
                     "normalized": bool
         """
-        super().__init__(ta=None,
+        super().__init__(ta=ta,
                          stats=stats, runhistory=runhistory, 
                          run_obj=run_obj,
-                         par_factor=par_factor)
-        
+                         par_factor=par_factor,
+                         cost_for_crash=cost_for_crash,
+                         abort_on_first_run_crash=abort_on_first_run_crash)
+
         self.ta_bin = ta_bin
         self.runsolver_bin = runsolver_bin
         self.memlimit = memlimit
