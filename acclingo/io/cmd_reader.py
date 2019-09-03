@@ -108,7 +108,22 @@ class CMDReader(object):
         '''
             return list of files in dir_ with given suffix_ 
         '''
-        insts = glob.glob(os.path.join(dir_, "*%s" %(suffix_)))
-        self.logger.debug("#Instances: %d" %(len(insts)))
+        if os.path.isdir(dir_):
+            insts = glob.glob(os.path.join(dir_, "*%s" %(suffix_)))
+            self.logger.debug("#Instances: %d" %(len(insts)))
+        elif os.path.isfile(dir_):
+            with open(dir_, "r") as f:
+                insts = f.readlines()
+            insts = [str(i).strip() for i in insts]
+            self.logger.info("#Instances: %d" %(len(insts)))
+
         return [[x] for x in insts]
+                
+
+
+
+
+
+
+
         
