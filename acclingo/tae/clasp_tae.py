@@ -112,15 +112,25 @@ class ClaspTAE(ExecuteTARun):
             params.append(value)
         thread_to_params, thread_to_solver, params_to_tags = self.parse_parameters(params)
         
-        for t, p_list in thread_to_params.items():
-             for p in p_list:
-                 cmd += " "+p
+        config_file = "config_file.tmp"
+        configuration = "auto"
+        with open(config_file, "w") as cfile:
+            for t, p_list in thread_to_params.items():
+                if t == 0: # global params
+                    for p in p_list:
+                        if "--configuration" not in p:
+                            cmd += " " + p
+                        else:
+                            configuration = p.split("=")[1]
+                else:
+                    cfile.write("[{}]: {}\n".format(configuration, " ".join(p_list)))
         
         cmd += " --mode=clasp"
+        cmd += " --configuration={}".format(config_file)
         
         if instance.endswith(".gz"):
            cmd += "'"
-           
+        
         # runsolver
         random_id = random.randint(0,2**20)
         tmp_dir = "."
@@ -155,6 +165,7 @@ class ClaspTAE(ExecuteTARun):
         else:
             os.remove(watcher_file)
             os.remove(solver_file)
+            os.remove(config_file)
 
         if self.run_obj == "runtime":
             cost = ta_runtime
