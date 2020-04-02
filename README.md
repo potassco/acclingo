@@ -49,7 +49,7 @@ python scripts/acclingo --instance_dir <directory> --fn_suffix ".gz" --binary <s
 
 # Additional Options
 
-the --tae_args can also be used to change the mode of clingo. By default it is set to "clasp". If the instances require an additional file(encoding) to run, you can also provide it with the --tae_args option using "encoding":
+The --tae_args can also be used to change the mode of clingo. By default it is set to "clasp". If the instances require an additional file(encoding) to run, you can also provide it with the --tae_args option using "encoding":
 ```
 --tae_args "{\"mode\": \"clingo\", \"encoding\": \"path/to/encoding.lp\"}"
 ```
