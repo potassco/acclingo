@@ -81,6 +81,7 @@ class ClaspOptTAE(ExecuteTARun):
     def run(self, config, instance,
             cutoff,
             seed=12345,
+            budget=None,
             instance_specific="0"
             ):
         """
@@ -165,7 +166,7 @@ class ClaspOptTAE(ExecuteTARun):
         
         cmd = "setsid %s -C %d -M %d -w %s -o %s %s" %(self.runsolver_bin, cutoff, self.memlimit, watcher_file, solver_file, cmd) 
 
-        self.logger.info("Calling: %s" % (cmd))
+        self.logger.debug("Calling: %s" % (cmd))
         p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE, universal_newlines=True)
         stdout_, stderr_ = p.communicate()
 

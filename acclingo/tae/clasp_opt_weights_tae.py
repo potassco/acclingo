@@ -104,6 +104,7 @@ class ClaspOptTAE(ExecuteTARun):
     def run(self, config, instance,
             cutoff,
             seed=12345,
+            budget=None,
             instance_specific="0"
             ):
         """
