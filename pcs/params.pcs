@@ -9,7 +9,6 @@
 # ---
 # --- PREPROCESSING - global options
 @0:solver {clasp-3}[clasp-3] # REPLACE with your binary
-@0:configuration {auto,frumpy,jumpy,tweety,handy,crafty,trendy}[auto] # default config for options not explicitly given
 @0:F:learn-explicit{yes,no}[no]
 @0:S:sat-prepro {yes,no}[yes]
 @0:sat-prepro {0}[0]
@@ -25,6 +24,8 @@
 @0:F:eq-dfs{yes,no}[no]        # Conditional,  ASP
 @0:F:no-gamma{yes,no}[no]      # only for disjunctive ASP
 @0:trans-ext{all,choice,card,weight,integ,dynamic,no}[dynamic] # ASP
+
+@1:configuration {auto,frumpy,jumpy,tweety,handy,crafty,trendy}[auto] # default config for options not explicitly given
 # --- OPTIMIZATION
 #@1:enum-mode {bt, record, auto}[auto] # ASP
 @1:0:opt-strategy {bb,usc} [bb]

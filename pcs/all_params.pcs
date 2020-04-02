@@ -12,7 +12,6 @@ Generating pcs file...
 # -----
 # --- PREPROCESSING - global options
 @0:solver {clasp3}[clasp3]
-@0:configuration {auto,frumpy,jumpy,tweety,handy,crafty,trendy}[auto] # default config for options not explicitly given
 @0:F:learn-explicit{yes,no}[no]
 @0:S:sat-prepro {yes,no}[yes]
 @0:sat-prepro {0}[0]
@@ -29,6 +28,7 @@ Generating pcs file...
 @0:F:eq-dfs{yes,no}[no]
 @0:F:no-gamma{yes,no}[no]
 @0:trans-ext {all,choice,card,weight,integ,dynamic,no}[dynamic]
+@1:configuration {auto,frumpy,jumpy,tweety,handy,crafty,trendy}[auto] # default config for options not explicitly given
 @1:partial-check {0,10,20,30,40,50}[0] # only for disjunctive ASP
 @1:loops {common,distinct,shared,no}[no]
 @1:score-other {no,loop,all}[loop]
