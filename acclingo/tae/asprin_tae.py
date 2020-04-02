@@ -149,7 +149,7 @@ class AsprinTAE(ExecuteTARun):
         
         cmd += " --mode={}".format(self.mode)
         cmd += " --configuration={}".format(config_file)
-        cmd += " --quiet=2"
+        cmd += " --quiet=2 --stats"
         cmd += " --parallel-mode={}".format(thread_count)
         
         if instance.endswith(".gz"):
