@@ -34,7 +34,6 @@
 @1:1:opt-usc-shrink | @1:0:opt-usc-shrink in {lin,inv,bin,rgs,exp,min}
 
 @2:configuration {auto,frumpy,jumpy,tweety,handy,crafty,trendy}[auto] # default config for options not explicitly given
-@2:0:heuristic {Vsids,Domain} [Vsids]
 
 ## OPTIMIZATION OPTIONS
 @2:0:opt-strategy {bb,usc} [bb]
@@ -48,11 +47,11 @@
 
 
 # opt conds
-@2:1:BB:opt-strategy | @1:0:opt-strategy in {bb}
-@2:1:USC:opt-strategy | @1:0:opt-strategy in {usc}
-@2:2:USC:opt-strategy | @1:1:USC:opt-strategy in {oll,one,pmres}
-@2:2:USCK:opt-strategy| @1:1:USC:opt-strategy in {k}
-@2:3:USCK:opt-strategy| @1:1:USC:opt-strategy in {k}
-@2:0:opt-usc-shrink | @1:0:opt-strategy in {usc}
-@2:1:opt-usc-shrink | @1:0:opt-strategy in {usc}
-@2:1:opt-usc-shrink | @1:0:opt-usc-shrink in {lin,inv,bin,rgs,exp,min}
+@2:1:BB:opt-strategy | @2:0:opt-strategy in {bb}
+@2:1:USC:opt-strategy | @2:0:opt-strategy in {usc}
+@2:2:USC:opt-strategy | @2:1:USC:opt-strategy in {oll,one,pmres}
+@2:2:USCK:opt-strategy| @2:1:USC:opt-strategy in {k}
+@2:3:USCK:opt-strategy| @2:1:USC:opt-strategy in {k}
+@2:0:opt-usc-shrink | @2:0:opt-strategy in {usc}
+@2:1:opt-usc-shrink | @2:0:opt-strategy in {usc}
+@2:1:opt-usc-shrink | @2:0:opt-usc-shrink in {lin,inv,bin,rgs,exp,min}
