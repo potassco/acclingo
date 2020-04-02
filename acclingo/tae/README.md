@@ -1,6 +1,6 @@
 # Asprin TAE
 
-This TAE is very similar to the basic clasp TAE. The only differences are that it only counts a solution as a succesful solution if the optimum was found and it needs an asprin "binary" or a way to call asprin. The penalty for no solution or no optimal solution is the maximum available time multiplied by some penalty. This penalty can be given as a parameter:
+This TAE is very similar to the basic clasp TAE. The only differences are that it only counts a solution as a succesful solution if the optimum was found and that it needs an asprin "binary" or a way to call asprin. The penalty for no solution or no optimal solution is the maximum available time multiplied by some penalty value . This penalty value can be given as a parameter:
 
 ⋅⋅* Parameter to penalize no optimal solution = "penalty": float
 
@@ -14,13 +14,13 @@ example:
 The optimization weights TAE is a variant of "clasp\_opt\_tae" where the cost of not finding the optimal solution is calculated based on the time it takes to find some solution (or no solution) and the solution quality.
 
 ## Solution quality
-There are two ways to calculate the cost of the solution, normalized cost and not normalized cost. For both calculations we assume that a higher value is always worse.
+There are two ways to calculate the cost of the solution: normalized cost and not normalized cost. For both calculations we assume that a higher value is always worse.
 
 Normalized cost uses the following formula:
 ```
     solution_quality = 1 - (best_known_solution / found_solution_quality)
 ```
-this formula will be between 0 and 1 for all values *worse* than the best solution. This also assumes that worse values are higher than better values(E.g 10 is worse than 5). 
+this formula will be between 0 and 1 for all values *worse* than the best solution. A solution is worse than another if its value is higher(E.g 10 is worse than 5). If the solution found is better, the value will become negative.
 
 Not normalized quality cost uses the following formula:
 ```
@@ -29,7 +29,7 @@ Not normalized quality cost uses the following formula:
 This formula basically gives a ratio of the quality of the found solution to the best known solution. So, a value higher than 1 means that the found solution is worse and a value below 1 means that the found solution is better.
 
 ## Runtime quality
-The Above formulas are used to gage the solution quality. To calculate the actual cost we also want to take a loot at the time quality. The following formula is used regardless of the which quality formula is used:
+The Above formulas are used to gage the solution quality. To calculate the actual cost we also want to take a look at the time quality. The following formula is used regardless of the which quality formula is used:
 ```
     runtime_quality = (found_solution_runtime / cutoff)
 ```
@@ -41,7 +41,7 @@ If a solution was not found for the current instance, the following formula is u
 ```
     cost = par_factor * unsolved_penalty
 ```
-Par factor is usually set to 10 and unsolved penalty is a predefined value that modifies par factor. Users need to be careful when choosing a low unsolved_penalty when using the not normalized formula for solution quality as the value for solution quality can potentially be very big.
+Par factor is usually set to 10 and unsolved penalty is a predefined value that modifies par factor.
 
 The actual cost is then calculated with the following formula:
 ```
