@@ -1,0 +1,57 @@
+# -----
+# clasp-3.3.x reduced option parameter file
+# -----
+# F: flag (yes = flag set; no = flag removed)
+# S: skip (only to model constraints for the parameters; not passed to clasp)
+# :[String]: will not be parsed for clasp (only syntatic sugar for the parameter file)
+# :[int]: alignment of complex parameters
+# i : integer range
+# l : logarithmic transformation (n > 0)
+# -----
+# --- PREPROCESSING - global options
+@0:solver {clasp3}[clasp3]
+@1:configuration {auto,frumpy,jumpy,tweety,handy,crafty,trendy}[auto] # default config for options not explicitly given
+
+# OPTIMIZATION OPTIONS
+@1:0:opt-strategy {bb,usc} [bb]
+@1:1:BB:opt-strategy {lin,hier,inc,dec}[lin]
+@1:1:USC:opt-strategy {oll,one,pmres,k} [oll]
+@1:2:USC:opt-strategy {0,1,2,3,4,5,6,7}[1]
+@1:2:USCK:opt-strategy {0,2,4,8,16,32,48,64,128,256,512,1024}[0]
+@1:3:USCK:opt-strategy {0,1,2,3,4,5,6,7}[1]
+@1:0:opt-usc-shrink {lin,inv,bin,rgs,exp,min,no}[no]
+@1:1:opt-usc-shrink {2,4,8,10,12,14}[10]
+
+
+# opt conds
+@1:1:BB:opt-strategy | @1:0:opt-strategy in {bb}
+@1:1:USC:opt-strategy | @1:0:opt-strategy in {usc}
+@1:2:USC:opt-strategy | @1:1:USC:opt-strategy in {oll,one,pmres}
+@1:2:USCK:opt-strategy| @1:1:USC:opt-strategy in {k}
+@1:3:USCK:opt-strategy| @1:1:USC:opt-strategy in {k}
+@1:0:opt-usc-shrink | @1:0:opt-strategy in {usc}
+@1:1:opt-usc-shrink | @1:0:opt-strategy in {usc}
+@1:1:opt-usc-shrink | @1:0:opt-usc-shrink in {lin,inv,bin,rgs,exp,min}
+
+@2:configuration {auto,frumpy,jumpy,tweety,handy,crafty,trendy}[auto] # default config for options not explicitly given
+
+## OPTIMIZATION OPTIONS
+@2:0:opt-strategy {bb,usc} [bb]
+@2:1:BB:opt-strategy {lin,hier,inc,dec}[lin]
+@2:1:USC:opt-strategy {oll,one,pmres,k} [oll]
+@2:2:USC:opt-strategy {0,1,2,3,4,5,6,7}[1]
+@2:2:USCK:opt-strategy {0,2,4,8,16,32,48,64,128,256,512,1024}[0]
+@2:3:USCK:opt-strategy {0,1,2,3,4,5,6,7}[1]
+@2:0:opt-usc-shrink {lin,inv,bin,rgs,exp,min,no}[no]
+@2:1:opt-usc-shrink {2,4,8,10,12,14}[10]
+
+
+# opt conds
+@2:1:BB:opt-strategy | @2:0:opt-strategy in {bb}
+@2:1:USC:opt-strategy | @2:0:opt-strategy in {usc}
+@2:2:USC:opt-strategy | @2:1:USC:opt-strategy in {oll,one,pmres}
+@2:2:USCK:opt-strategy| @2:1:USC:opt-strategy in {k}
+@2:3:USCK:opt-strategy| @2:1:USC:opt-strategy in {k}
+@2:0:opt-usc-shrink | @2:0:opt-strategy in {usc}
+@2:1:opt-usc-shrink | @2:0:opt-strategy in {usc}
+@2:1:opt-usc-shrink | @2:0:opt-usc-shrink in {lin,inv,bin,rgs,exp,min}

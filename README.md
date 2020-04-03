@@ -47,6 +47,9 @@ python scripts/acclingo --instance_dir <directory> --fn_suffix ".gz" --binary <s
 - `--tae_class acclingo/tae/clasp_opt_tae.py`: TAE that expects `<solver>` to be a `clingo` binary and grounded instances to include `#minimize` statements. If no solution was found or the resulting cost is bigger then the ParN score, the ParN score is returned as costs. Per default 10*cutoff. Otherwise the cost is runtime times percental difference of achieved quality to best known bound.
 - `--tae_args "{\"best_known\": \"<csv file>\"}"`: String in json format that passes auxiliary arguments to the TAE. The TAE expects the csv file to have instance names without extension in the first column and integers representing the best known bound in the second.
 
+# Additional Options
 
-
-
+The --tae_args can also be used to change the mode of clingo. By default it is set to "clasp". If the instances require an additional file(encoding) to run, you can also provide it with the --tae_args option using "encoding":
+```
+--tae_args "{\"mode\": \"clingo\", \"encoding\": \"path/to/encoding.lp\"}"
+```

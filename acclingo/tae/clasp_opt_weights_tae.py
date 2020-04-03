@@ -90,10 +90,21 @@ class ClaspOptTAE(ExecuteTARun):
 
         if "normalized" in misc:
             self.normalized = misc["normalized"]
+
+        self.encoding = ""
+
+        self.mode = "clasp"
+
+        if "encoding" in misc:
+            self.encoding = misc["encoding"]
+
+        if "mode" in misc:
+            self.mode = misc["mode"]
         
     def run(self, config, instance,
             cutoff,
             seed=12345,
+            budget=None,
             instance_specific="0"
             ):
         """
@@ -127,9 +138,9 @@ class ClaspOptTAE(ExecuteTARun):
 
         
         if not instance.endswith(".gz"):
-            cmd = "%s %s --seed %d " %(self.ta_bin, instance, seed)       
+            cmd = "{bin} {encoding} {instance} --seed {seed} ".format(bin=self.ta_bin, encoding=self.encoding, instance=instance, seed=seed)       
         else:
-            cmd = "bash -c 'zcat %s | %s --seed %d " %(instance, self.ta_bin, seed )       
+            cmd = "bash -c 'zcat {instance} | {bin} {encoding} --seed {seed} ".format(instance=instance, bin=self.ta_bin, encoding=self.encoding, seed=seed )       
         
         params = []
         for name in config:
@@ -140,11 +151,28 @@ class ClaspOptTAE(ExecuteTARun):
             params.append(value)
         thread_to_params, thread_to_solver, params_to_tags = self.parse_parameters(params)
         
-        for t, p_list in thread_to_params.items():
-             for p in p_list:
-                 cmd += " "+p
+        thread_count = int(max(thread_to_params.keys()))
+        config_file = "config_file.tmp"
+        with open(config_file, "w") as cfile:
+            for t, p_list in thread_to_params.items():
+                if t == 0: # global params
+                    for p in p_list:
+                            cmd += " " + p
+                else:
+                    new_p_list = []
+                    thread_config = "auto"
+                    for p in p_list:
+                        if "--configuration" in p:
+                            thread_config = p.split("=")[1]
+                        else:
+                            new_p_list.append(p)
+
+                    cfile.write("{}({}): {}\n".format(t, thread_config, " ".join(new_p_list)))
         
-        cmd += " --mode=clasp"
+        cmd += " --mode={}".format(self.mode)
+        cmd += " --configuration={}".format(config_file)
+        cmd += " --quiet=2 --stats"
+        cmd += " --parallel-mode={}".format(thread_count)
         
         if instance.endswith(".gz"):
            cmd += "'"
@@ -170,7 +198,10 @@ class ClaspOptTAE(ExecuteTARun):
         
         ta_status_rs, ta_runtime, ta_exit_code = self.read_runsolver_output(watcher_file)
 
-        ta_status, ta_quality = self.parse_output(fn=solver_file, exit_code=ta_exit_code)
+        ta_status, ta_quality, clingo_runtime = self.parse_output(fn=solver_file, exit_code=ta_exit_code)
+                
+        if ta_runtime is None:
+            ta_runtime = clingo_runtime
         
         if not ta_status:
             ta_status = ta_status_rs
@@ -423,7 +454,9 @@ class ClaspOptTAE(ExecuteTARun):
         elif re.search('INDETERMINATE', data):
             ta_status = StatusType.TIMEOUT
         
-        return ta_status, ta_quality 
+        clingo_runtime = re.search(r"Time[ ]*:[ ]*(\d+\.\d+)s", data).group(1)
+        
+        return ta_status, ta_quality, float(clingo_runtime) 
 
     def read_runsolver_output(self, watcher_fn: str):
         '''
