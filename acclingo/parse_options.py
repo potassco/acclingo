@@ -112,7 +112,7 @@ def parse_options(options, thread_separator=" "):
     
     arg_str = ""
     
-    for thread in arguments.keys():
+    for thread in sorted(arguments.keys()):
         thread_args = arguments[thread]
         for name, args in thread_args.items():
             pre_arg_str=argstostring(name, args)

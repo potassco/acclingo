@@ -1,4 +1,4 @@
-import parse_options
+from acclingo import parse_options
 import os
 import subprocess
 import argparse
@@ -42,7 +42,7 @@ def test_options(options, program):
 
     return 1 # all good :)
 
-def write_options_file(folder, add_defaults=False, thread_separator=" ", hydra=True):
+def parse_options_from_folder(folder, add_defaults=False, thread_separator=" ", hydra=False):
     
     if hydra:
         find_command = FIND_HYDRA
@@ -52,17 +52,19 @@ def write_options_file(folder, add_defaults=False, thread_separator=" ", hydra=T
         get_options_func = parse_options.get_options_traj
 
 
-
+    config = ""
     for path in get_file_paths(folder, find_command):
         options = get_options_func(path, thread_separator)
         path_split = path.split("/")
         name = "---".join(path_split[-3:-1])
 
-        print("{} ; {}\n".format(name, options))
+        config += "{} ; {}\n".format(name, options)
 
     if add_defaults:
         for config, config_str in DEFAULT_CONFIGS.items():
-            print("{}\n".format(config_str))
+            config += "{}\n".format(config_str)
+
+    return config
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -79,4 +81,6 @@ if __name__ == "__main__":
     else:
         thread_separator = " "
 
-    write_options_file(args.folder, add_defaults=args.add_defaults, thread_separator=thread_separator, hydra=args.hydra)
+    config = parse_options_from_folder(args.folder, add_defaults=args.add_defaults, thread_separator=thread_separator, hydra=args.hydra)
+
+    print(config)
