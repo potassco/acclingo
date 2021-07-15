@@ -9,6 +9,10 @@ from smac.scenario.scenario import Scenario
 from acclingo.io.cmd_reader import CMDReader
 from acclingo.tae.clasp_tae import ClaspTAE
 
+from acclingo import extract_configs
+
+import re
+
 
 __maintainer__='Marius Lindauer'
 __license__ = "BSD"
@@ -53,3 +57,16 @@ class ACClingo(object):
         smac = SMAC4AC(scenario=scen, rng=args_.seed, tae_runner=tae_class, tae_runner_kwargs=tae_args)
 
         conf = smac.optimize()
+
+        print("\n")
+        config = extract_configs.parse_options_from_folder(smac.output_dir, add_defaults=False, thread_separator=" || ", hydra=False)
+
+        matches = re.findall(r"\|\|", config)
+
+        if len(matches) == 2:
+            print("Best configuration as a clingo readable command line (folder ; command line):\n")
+            print(config.replace("||", ""))
+
+        elif len(matches) > 2:
+            print("Best configuration with || as thread separator (folder ; preprocess options || options for thread 1 || thread 2 || ... :\n")
+            print(config)
