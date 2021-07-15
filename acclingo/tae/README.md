@@ -1,6 +1,6 @@
 # Asprin TAE
 
-This TAE is very similar to the basic clasp TAE. The only differences are that it only counts a solution as a succesful solution if the optimum was found and that it needs an asprin "binary" or a way to call asprin. The penalty for no solution or no optimal solution is the maximum available time multiplied by some penalty value . This penalty value can be given as a parameter:
+This TAE is very similar to the basic clasp TAE. The only differences are that it only counts a solution as a succesful solution if the optimum was found and that it needs an asprin "binary" or a way to call asprin. The penalty for no solution or no optimal solution is the maximum available time multiplied by some penalty value. This penalty value can be given as a parameter:
 
 ⋅⋅* Parameter to penalize no optimal solution = "penalty": float
 

@@ -25,9 +25,18 @@ No further installation is necessary and the main script can be executed via fol
 python scripts/acclingo --instance_dir <directory> <optional options>
 ```
 The directory with the instances is the only required parameter, all other options are optional, see `--help` for more information.
-Per default, `acclingo` retrieves a parameter configuration optimizing runtime for solving grounded instances from the parameter space described [here](pcs/params.pcs) using instances that may be gzipped from `<directory>` .
-We provide static binaries for Linux 64 of `clingo 5.1.0` and `runsolver 3.3.4` [here](binaries/).
- 
+Per default, `acclingo` retrieves a parameter configuration optimizing runtime for solving grounded instances from the parameter space described [here](pcs/all_params.pcs) using instances that may be gzipped from `<directory>` .
+We provide static binaries for Linux 64 of `runsolver 3.3.4` [here](binaries/).
+
+# Simple Example
+This simple example assumes that you have clingo installed. In this example we optimize the solving time for the instances inside the test-domain directory. We give it a 10 second cutoff per instance and configuration pair and a total wall time of 180 seconds. Run the following command while in the main acclingo folder:
+
+```
+python scripts/acclingo --instance_dir test-domain/instances --cutoff 10 --ac_budget 180 --tae_args "{\"encoding\": \"test-domain/blocks-encoding.lp\"}"
+```
+
+When acclingo finishes running it will print out the best configuration it found. Keep in mind that this configuration might still be the base configuration given by the pcs file.
+
 # Advanced Example
 
 We provide the following example enabling algorithm configuration for instances with optimization statements.

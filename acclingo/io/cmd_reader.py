@@ -50,9 +50,9 @@ class CMDReader(object):
                               choices=["runtime", "quality"],
                               help="run objective")
 
-        opt_opts.add_argument("--binary", default="binaries/clingo",
+        opt_opts.add_argument("--binary", default="clingo",
                               help="target binary")
-        opt_opts.add_argument("--pcs_file", default="pcs/params.pcs",
+        opt_opts.add_argument("--pcs_file", default="pcs/all_params.pcs",
                               help="parameter configuration file")
         opt_opts.add_argument("--runsolver", default="binaries/runsolver",
                               help="runsolver binary")
