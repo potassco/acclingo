@@ -62,6 +62,7 @@ class ClaspTAE(ExecuteTARunAClib):
         self.runsolver_bin = runsolver_bin
         self.memlimit = memlimit
         self.par_factor = par_factor
+        self.run_obj = run_obj
 
         self.encoding = ""
 
@@ -79,8 +80,11 @@ class ClaspTAE(ExecuteTARunAClib):
     def handle_misc_args(self, misc):
         """
         If your TAE has some misc args it has to handle to that here!
+        Also, it has to handle the self.run_obj argument.
+        E.g., it may only support runtime or quality
         """
-        pass
+        if self.run_obj != "runtime":
+            raise Exception("Run objective {} not supported. This TAE only supports 'runtime'".format(self.run_obj))
         
 
     def run(self, config, instance,
@@ -127,19 +131,13 @@ class ClaspTAE(ExecuteTARunAClib):
         self.logger.debug("Stdout: %s" % (stdout_))
         self.logger.debug("Stderr: %s" % (stderr_))
         
-        runsolver_output = self.read_runsolver_output(watcher_file)
-        ta_status_rs = runsolver_output["ta_status"]
-        ta_runtime = runsolver_output["ta_runtime"]
-        ta_exit_code = runsolver_output["ta_exit_code"]
+        rs_output = self.read_runsolver_output(watcher_file)
+        ta_status_rs = rs_output["ta_status"]
+        ta_runtime = rs_output["ta_runtime"]
+        ta_exit_code = rs_output["ta_exit_code"]
 
         solver_output = self.parse_output(fn=solver_file, exit_code=ta_exit_code)
         ta_status = solver_output["ta_status"]
-        ta_quality = solver_output["ta_quality"]
-        clingo_runtime = solver_output["clingo_runtime"]
-
-        if ta_runtime is None:
-            self.logger.warn("Runsolver runtime could no be found, using runtime reported by solver instead.")
-            ta_runtime = clingo_runtime
 
         if not ta_status:
             ta_status = ta_status_rs
@@ -154,16 +152,24 @@ class ClaspTAE(ExecuteTARunAClib):
             os.remove(solver_file)
             os.remove(config_file)
 
-        cost = self.calculate_cost(runsolver_output, solver_output)
+        cost = self.calculate_cost(rs_output, solver_output, cutoff)
             
         return ta_status, cost, ta_runtime, {}
 
-    def calculate_cost(self, runsolver_output, solver_output):
+    def calculate_cost(self, rs_output, solver_output, cutoff):
+        
+        if rs_output["ta_runtime"] is not None:
+            ta_runtime = rs_output["ta_runtime"]
+        elif solver_output["clingo_runtime"] is not None:
+            ta_runtime = solver_output["clingo_runtime"]
+        else:
+            ta_runtime = None
 
         if self.run_obj == "runtime":
-            cost = runsolver_output["ta_runtime"]
-        elif self.run_obj == "quality":
-            cost = runsolver_output["ta_quality"]
+            if ta_runtime is None:
+                cost = cutoff
+            else:
+                cost = ta_runtime
 
         return cost
     
@@ -412,7 +418,8 @@ class ClaspTAE(ExecuteTARunAClib):
             fn: a name to the file containing clasp stdout.
             exit_code : exit code of target algorithm
         Returns:
-            ta_status, ta_quality 
+            dictionary with at least the keys:
+            ta_status, ta_quality, clingo_runtime 
         '''
         self.logger.debug("reading solver results from %s" % (fn))
         with open(fn) as fp:
@@ -442,7 +449,21 @@ class ClaspTAE(ExecuteTARunAClib):
         
         clingo_runtime = re.search(r"Time[ ]*:[ ]*(\d+\.\d+)s", data).group(1)
 
-        return {"ta_status": ta_status, "ta_quality": ta_quality, "clingo_runtime": clingo_runtime} 
+        other_output = self.parse_extra_solver_data(data)
+
+        data_dict = {"ta_status": ta_status, "ta_quality": ta_quality, "clingo_runtime": clingo_runtime}
+        data_dict.update(other_output)
+
+        return data_dict
+
+    def parse_extra_solver_data(self, data):
+        """
+        Use this function to parse extra data from the output of the solver
+        It is also possible to overwrite the data from the regular parse_output function
+
+        this has to return a dictionary
+        """
+        return {}
 
     def read_runsolver_output(self, watcher_fn: str):
         '''
@@ -457,6 +478,7 @@ class ClaspTAE(ExecuteTARunAClib):
             
             Returns
             -------
+            A dictionary with at least the following keys:
             ta_status, ta_runtime, ta_exit_code
             
         ''' 
@@ -493,4 +515,18 @@ class ClaspTAE(ExecuteTARunAClib):
         if (exitcode_match):
             ta_exit_code = int(exitcode_match.group(1))
             
-        return {"ta_status": ta_status, "ta_runtime": ta_runtime, "ta_exit_code": ta_exit_code}
+        other_output = self.parse_extra_runsolver_data(data)
+
+        data_dict = {"ta_status": ta_status, "ta_runtime": ta_runtime, "ta_exit_code": ta_exit_code}
+        data_dict.update(other_output)
+
+        return data_dict
+
+    def parse_extra_runsolver_data(self, data):
+        """
+        Use this function to parse extra data from the output of the runsolver
+        It is also possible to overwrite the data from the regular parse_output function
+
+        this has to return a dictionary
+        """
+        return {}
