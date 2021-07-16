@@ -4,9 +4,9 @@ import random
 import re
 from subprocess import Popen, PIPE
 
-from smac.tae.execute_ta_run import StatusType, ExecuteTARun
+from smac.tae import StatusType
+from smac.tae.execute_ta_run_aclib import ExecuteTARunAClib
 from smac.stats.stats import Stats
-from smac.runhistory.runhistory import RunHistory
 from smac.utils.constants import MAXINT
 
 from tempfile import NamedTemporaryFile
@@ -16,13 +16,13 @@ __license__ = "3-clause BSD"
 
 float_regex = '[+-]?\d+(?:\.\d+)?(?:[eE][+-]\d+)?'
 
-class ClaspTAE(ExecuteTARun):
+class ClaspTAE(ExecuteTARunAClib):
 
     
     def __init__(self, ta_bin:str, runsolver_bin:str,
                  ta=None, 
                  memlimit:int=2048,
-                 stats:Stats=None, runhistory:RunHistory=None, 
+                 stats:Stats=None,
                  run_obj:str="runtime",
                  par_factor=10,
                  cost_for_crash: float=float(MAXINT),
@@ -52,7 +52,7 @@ class ClaspTAE(ExecuteTARun):
                 penalized average runtime factor
         """
         super().__init__(ta=ta,
-                         stats=stats, runhistory=runhistory, 
+                         stats=stats,
                          run_obj=run_obj,
                          par_factor=par_factor,
                          cost_for_crash=cost_for_crash,
@@ -61,16 +61,26 @@ class ClaspTAE(ExecuteTARun):
         self.ta_bin = ta_bin
         self.runsolver_bin = runsolver_bin
         self.memlimit = memlimit
+        self.par_factor = par_factor
 
         self.encoding = ""
 
-        self.mode = "clasp"
+        self.mode = "clingo"
 
         if "encoding" in misc:
             self.encoding = misc["encoding"]
 
         if "mode" in misc:
             self.mode = misc["mode"]
+
+
+        self.handle_misc_args(misc)
+
+    def handle_misc_args(self, misc):
+        """
+        If your TAE has some misc args it has to handle to that here!
+        """
+        pass
         
 
     def run(self, config, instance,
@@ -108,7 +118,57 @@ class ClaspTAE(ExecuteTARun):
                     all further additional run information
         """
 
+        cmd, solver_file, watcher_file, config_file = self.build_cmd(config, instance, seed, cutoff)
         
+        self.logger.debug("Calling: %s" % (cmd))
+        p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE, universal_newlines=True)
+        stdout_, stderr_ = p.communicate()
+
+        self.logger.debug("Stdout: %s" % (stdout_))
+        self.logger.debug("Stderr: %s" % (stderr_))
+        
+        runsolver_output = self.read_runsolver_output(watcher_file)
+        ta_status_rs = runsolver_output["ta_status"]
+        ta_runtime = runsolver_output["ta_runtime"]
+        ta_exit_code = runsolver_output["ta_exit_code"]
+
+        solver_output = self.parse_output(fn=solver_file, exit_code=ta_exit_code)
+        ta_status = solver_output["ta_status"]
+        ta_quality = solver_output["ta_quality"]
+        clingo_runtime = solver_output["clingo_runtime"]
+
+        if ta_runtime is None:
+            self.logger.warn("Runsolver runtime could no be found, using runtime reported by solver instead.")
+            ta_runtime = clingo_runtime
+
+        if not ta_status:
+            ta_status = ta_status_rs
+
+        if ta_status in [StatusType.CRASHED, StatusType.ABORT]:
+            self.logger.warn(
+                "Target algorithm crashed. Last 5 lines of stdout and stderr")
+            self.logger.warn("\n".join(stdout_.split("\n")[-5:]))
+            self.logger.warn("\n".join(stderr_.split("\n")[-5:]))
+        else:
+            os.remove(watcher_file)
+            os.remove(solver_file)
+            os.remove(config_file)
+
+        cost = self.calculate_cost(runsolver_output, solver_output)
+            
+        return ta_status, cost, ta_runtime, {}
+
+    def calculate_cost(self, runsolver_output, solver_output):
+
+        if self.run_obj == "runtime":
+            cost = runsolver_output["ta_runtime"]
+        elif self.run_obj == "quality":
+            cost = runsolver_output["ta_quality"]
+
+        return cost
+    
+    def build_cmd(self, config, instance, seed, cutoff):
+
         if not instance.endswith(".gz"):
             cmd = "{bin} {encoding} {instance} --seed {seed} ".format(bin=self.ta_bin, encoding=self.encoding, instance=instance, seed=seed)       
         else:
@@ -161,37 +221,8 @@ class ClaspTAE(ExecuteTARun):
         
         cmd = "setsid %s -C %d -M %d -w %s -o %s %s" %(self.runsolver_bin, cutoff, self.memlimit, watcher_file, solver_file, cmd) 
 
-        self.logger.debug("Calling: %s" % (cmd))
-        p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE, universal_newlines=True)
-        stdout_, stderr_ = p.communicate()
+        return cmd, solver_file, watcher_file, config_file
 
-        self.logger.debug("Stdout: %s" % (stdout_))
-        self.logger.debug("Stderr: %s" % (stderr_))
-        
-        ta_status_rs, ta_runtime, ta_exit_code = self.read_runsolver_output(watcher_file)
-
-        ta_status, ta_quality = self.parse_output(fn=solver_file, exit_code=ta_exit_code)
-
-        if not ta_status:
-            ta_status = ta_status_rs
-
-        if ta_status in [StatusType.CRASHED, StatusType.ABORT]:
-            self.logger.warn(
-                "Target algorithm crashed. Last 5 lines of stdout and stderr")
-            self.logger.warn("\n".join(stdout_.split("\n")[-5:]))
-            self.logger.warn("\n".join(stderr_.split("\n")[-5:]))
-        else:
-            os.remove(watcher_file)
-            os.remove(solver_file)
-            os.remove(config_file)
-
-        if self.run_obj == "runtime":
-            cost = ta_runtime
-        else:
-            cost = ta_quality
-            
-        return ta_status, cost, ta_runtime, {}
-    
     def parse_parameters(self, params,prefix="--",separator="="):
         ''' parse parameters; syntax: -@[Thread]:{[component]:|S|F}*[param] [value]#
             globals parameters at thread-id 0
@@ -203,7 +234,7 @@ class ClaspTAE(ExecuteTARun):
                 thread_to_params:    thread-id to list of parameters (0 -> global parameters)
                 thread_to_solver:    thread-id to solver binary
                 params_to_tags:      parameter name to smac like tags 
-        '''     
+        '''
         params_to_tags = {}
         thread_to_params = {}
         thread_to_solver = {}
@@ -389,6 +420,15 @@ class ClaspTAE(ExecuteTARun):
         
         ta_status = None
         ta_quality = None
+
+        match=None
+        
+        for match in re.finditer(r"Optimization: ([0-9]+)", data):
+            pass
+        
+        if match:
+            ta_quality = int(match.group(1))
+
         if re.search('UNSATISFIABLE', data):
             ta_status = StatusType.SUCCESS
         elif re.search('SATISFIABLE', data):
@@ -400,7 +440,9 @@ class ClaspTAE(ExecuteTARun):
         elif re.search('INDETERMINATE', data):
             ta_status = StatusType.TIMEOUT
         
-        return ta_status, ta_quality 
+        clingo_runtime = re.search(r"Time[ ]*:[ ]*(\d+\.\d+)s", data).group(1)
+
+        return {"ta_status": ta_status, "ta_quality": ta_quality, "clingo_runtime": clingo_runtime} 
 
     def read_runsolver_output(self, watcher_fn: str):
         '''
@@ -451,4 +493,4 @@ class ClaspTAE(ExecuteTARun):
         if (exitcode_match):
             ta_exit_code = int(exitcode_match.group(1))
             
-        return ta_status, ta_runtime, ta_exit_code
+        return {"ta_status": ta_status, "ta_runtime": ta_runtime, "ta_exit_code": ta_exit_code}
