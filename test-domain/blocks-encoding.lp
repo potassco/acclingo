@@ -37,3 +37,5 @@ clear(table,T) :- time(T).
 :- on(B,B,T), time(T).
 
 :- not on(B,L,horizon), goal(on(B,L)).
+
+#show do/2.
