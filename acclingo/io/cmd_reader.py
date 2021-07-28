@@ -38,7 +38,7 @@ class CMDReader(object):
    
         opt_opts = parser.add_argument_group("Optional Options")
         
-        opt_opts.add_argument("--fn_suffix", default=".lp",
+        opt_opts.add_argument("--fn_suffix", default=".*",
                               help="suffix of instance file names")
         opt_opts.add_argument("--cutoff", default=10, type=int,
                               help="running time cutoff [sec]")
@@ -49,6 +49,8 @@ class CMDReader(object):
         opt_opts.add_argument("--run_obj", default="runtime",
                               choices=["runtime", "quality"],
                               help="run objective")
+        opt_opts.add_argument("--par-factor", default=10,
+                              help="Factor by which to penalize unsolved instances. Usage may differ based on TAE used.")
 
         opt_opts.add_argument("--binary", default="clingo",
                               help="target binary")
@@ -57,7 +59,7 @@ class CMDReader(object):
         opt_opts.add_argument("--runsolver", default="binaries/runsolver",
                               help="runsolver binary")
         opt_opts.add_argument("--tae_class", default=None,
-                              help="TAE class to individualize clingo calls -- has to inherit from smac.tae.execute_ta_run.ExecuteTARun")
+                              help="TAE class to individualize clingo calls -- has to inherit from smac.tae.execute_ta_run_aclib.ExecuteTARunAClib")
 
 
         opt_opts.add_argument("--seed", default=12345, type=int,
