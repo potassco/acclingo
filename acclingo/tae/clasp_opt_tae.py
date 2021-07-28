@@ -54,7 +54,7 @@ class ClaspOptTAE(ClaspTAE):
             best = self.best_known[os.path.splitext(os.path.basename(instance))[0]]
             diff = float(rs_output["ta_quality"]) - float(best)
             prct = float(best)/100.0 if best!=0 else 1.0
-            cost = min(float(cutoff * self.par_factor),ta_runtime*(1+diff/prct))
+            cost = min(float(cutoff * self.par_factor),ta_runtime*(1+(diff/prct))
 
         return cost
 

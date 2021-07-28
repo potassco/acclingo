@@ -141,7 +141,8 @@ class ClaspTAE(ExecuteTARunAClib):
 
         if not ta_status:
             ta_status = ta_status_rs
-
+            solver_output["ta_status"] = ta_status_rs
+            
         if ta_status in [StatusType.CRASHED, StatusType.ABORT]:
             self.logger.warn(
                 "Target algorithm crashed. Last 5 lines of stdout and stderr")
