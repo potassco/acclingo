@@ -7,11 +7,9 @@ from math import log2
 
 from acclingo.tae.clasp_tae import ClaspTAE
 
-#from smac.tae import StatusType
-#from smac.stats.stats import Stats
-#from smac.utils.constants import MAXINT
-
-#from tempfile import NamedTemporaryFile
+from smac.tae import StatusType
+from smac.stats.stats import Stats
+from smac.utils.constants import MAXINT
 
 __author__ = "Marius Lindauer"
 __license__ = "3-clause BSD"
@@ -75,7 +73,7 @@ class ClaspOptTAE(ClaspTAE):
 
         runtime_quality = float(runtime)/float(cutoff)
 
-        cost = min(float(self.par_factor * self.unsolved_penalty), runtime_quality + solution_quality)
+        cost = min(self.par_factor, runtime_quality + solution_quality)
 
         return cost
 
