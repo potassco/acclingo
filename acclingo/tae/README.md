@@ -1,69 +1,48 @@
-# Asprin TAE
+# TAEs
+A TAE is a special class that runs the target algorithm and reports the results of the runs back to the SMAC optimizer. We have 3 available TAEs at the moment. ```clasp_tae.py``` implements the basic TAE. It works for regular clingo and supports optimizing for **runtime**. The ```clasp_opt_tae.py``` file contains a TAE that is used to optimize for **quality**. This means that, in order to use this TAE effectively, the encoding/instance must have an optimization(e.g. minimize) statement. Finally, the asprin TAE, found in the ```asprin_tae.py``` file, is intended to be used with [asprin](https://github.com/potassco/asprin). This TAE is used to optimize for **runtime** and the run is considered successful only when it finds the optimum value. Below we cover how the cost of a single run is calculated for the three TAEs.
 
-This TAE is very similar to the basic clasp TAE. The only differences are that it only counts a solution as a succesful solution if the optimum was found and that it needs an asprin "binary" or a way to call asprin. The penalty for no solution or no optimal solution is the maximum available time multiplied by some penalty value. This penalty value can be given as a parameter:
+# Clingo and Asprin TAE cost function
 
-⋅⋅* Parameter to penalize no optimal solution = "penalty": float
-
-example:
+The cost function for both of these TAEs is very simple. It takes either the runtime if the run was successful or the runtime multiplied by the par factor otherwise.
 ```
---tae_args "{\"penalty\": 3}"
+cost = runtime
 ```
 
-# Optimization Weights (clasp_opt_weights_tae.py) TAE
+# Optimization TAE
 
-The optimization weights TAE is a variant of "clasp\_opt\_tae" where the cost of not finding the optimal solution is calculated based on the time it takes to find some solution (or no solution) and the solution quality.
-
-## Solution quality
-There are two ways to calculate the cost of the solution: normalized cost and not normalized cost. For both calculations we assume that a higher value is always worse.
-
-Normalized cost uses the following formula:
+The optimization TAE is used when we want to find configurations for optimization problems. There are two types of cost calculations. First, the "diverse" formula scales the time taken to find the solution by how the quality found compares to the best known value, percentage wise. For example, if the best known quality is 100 and the configuration managed to find a solution with quality 110 then the runtime is scaled up by 1+10. If the solution quality is 50 then the runtime is scaled by 1+(-50).
 ```
-    solution_quality = 1 - (best_known_solution / found_solution_quality)
-```
-this formula will be between 0 and 1 for all values *worse* than the best solution. A solution is worse than another if its value is higher(E.g 10 is worse than 5). If the solution found is better, the value will become negative.
-
-Not normalized quality cost uses the following formula:
-```
-    solution_quality = (found_solution_quality / best_known_solution)
-```
-This formula basically gives a ratio of the quality of the found solution to the best known solution. So, a value higher than 1 means that the found solution is worse and a value below 1 means that the found solution is better.
-
-## Runtime quality
-The Above formulas are used to gage the solution quality. To calculate the actual cost we also want to take a look at the time quality. The following formula is used regardless of the which quality formula is used:
-```
-    runtime_quality = (found_solution_runtime / cutoff)
-```
-Where cutoff is the maximum runtime. The value ranges from 0 to 1 with a higher value being worse as it took longer to find the solution.
-
-## Solution Cost calulation
-
-If a solution was not found for the current instance, the following formula is used
-```
-    cost = par_factor * unsolved_penalty
-```
-Par factor is usually set to 10 and unsolved penalty is a predefined value that modifies par factor.
-
-The actual cost is then calculated with the following formula:
-```
-    cost = time_weight * runtime_quality + solution_weight * solution_quality
-```
-We take both runtime and solution quality and add them based on some predefined weights. If the cost is *higher* than the cost for no solution, then the cost for no solution is taken instead.
-
-## TAE Parameters:
-
-⋅⋅* Parameter for solution quality weight = "solution": float
-⋅⋅* Parameter for runtime quality weight  = "time"    : float
-⋅⋅* Parameter for no solution penalty     = "penalty" : float
-⋅⋅* Parameter to choose quality formula   = "normalized": bool
-
-⋅⋅* Path to csv file containing list of best solutions = "best_known": str
-
-example:
-
-```
---tae_args "{\"best_known\": \"bestbound/bestboundfile.csv\", \"solution\": 0.6, \"time\": 0.4, \"penalty\": 5, \"normalized\": 1}"
+cost = runtime * (1 + percentage*100)
 ```
 
 
+The second formula, called "deep", is calculated by dividing the best found value by the solution quality, taking the log2 of the result and then subtracting it to 1:
+```
+quality_cost = 1 - log2(best/quality))
+```
 
+Then, we also calculate the ratio of the runtime to the cutoff:
+```
+runtime_cost = runtime/cutoff
+```
 
+To get the actual cost, we sum up those 2 values. If there was no solution found then we take the par factor as the cost.
+```
+cost = runtime_cost + quality_cost
+```
+
+You can decide which formula to use by providing the key "cost_function" and a value of either "diverse" or "deep" to the ```--tae-args``` option. The default function is "diverse".
+
+```
+--tae-args "{\"cost_function\": \"diverse\"}"
+```
+
+# Building your own TAE
+
+To build your own TAE we can use the ```template_tae.py``` file as a starting point. Simply copy it and start working on the new file.
+
+If your TAE has any arguments you should handle them inside the *handle_misc_args* function. The extra argument come mostly from the ```--tae-args``` option. Most importantly, in this function it is defined what type of run objective the TAE supports (either runtime or quality). An example of a misc argument to handle comes from the optimization TAE, which handles whether the "deep" or "diverse" cost function will be used based on the value in the misc dictionary.
+
+Then, define how the cost for a given run is calculated using the *calculate_cost* function. The function receives the parsed output of the runsolver file aswell as the parsed output of the solver. It also receives the cutoff time of the run as a parameter. The return value should be the cost of the run as a float value.
+
+Finally, if your system has an output format that is different from clingo, or if you need to parse some data that is not already parsed by default you can use the functions *parse_extra_solver_data* and *parse_extra_runsolver_data*. Those function receive the full text of the output of the solver and runsolver respectively. Their return value should be a dictionary. It is important to note that the values parsed here will then be passed on to the cost function so that it can make use of them if necessary.

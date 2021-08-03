@@ -42,7 +42,7 @@ class ACClingo(object):
         tae_args = {"ta_bin": args_.binary, "runsolver_bin": args_.runsolver, 
                 "memlimit": args_.memlimit,
                 "run_obj": args_.run_obj,
-                "par_factor": 10,
+                "par_factor": args_.par_factor,
                 "misc": args_.tae_args}
         
         if args_.tae_class:
